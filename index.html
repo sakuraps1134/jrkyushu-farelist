@@ -320,11 +320,11 @@
                 }
 
                 // タップイベント（Panzoomのドラッグ時と明確に分離）
-                badge.addEventListener('pointerup', (e) => {
-                    if (window.isDragging) return;
-                    currentFromStation = station;
-                    renderFares();
-                });
+                badge.addEventListener("click", (e) => {
+    e.stopPropagation();
+    currentFromStation = station;
+    renderFares();
+});
 
                 mapArea.appendChild(badge);
             });
@@ -332,19 +332,18 @@
 
         // --- Panzoomの初期化設定 ---
         const viewport = document.getElementById('viewport');
-        const panzoom = Panzoom(mapArea, {
-            maxScale: 4,
-            minScale: 0.15,
-            contain: 'outside',
-            startScale: 0.25
-        });
+       const panzoom = Panzoom(mapArea, {
+    maxScale: 4,
+    minScale: 0.15,
+    contain: 'outside',
+    startScale: 0.25,
+    excludeClass: 'fare-badge'
+});
 
         viewport.addEventListener('wheel', panzoom.zoomWithWheel);
 
         // ドラッグ状態の厳密な管理
-        window.isDragging = false;
-        mapArea.addEventListener('panzoompan', () => { window.isDragging = true; });
-        viewport.addEventListener('pointerdown', () => { window.isDragging = false; });
+       
 
         renderFares();
     </script>
