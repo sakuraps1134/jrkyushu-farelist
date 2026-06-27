@@ -38,7 +38,7 @@
         #info-panel p { font-size: 12px; color: #ccc; }
         #current-status { font-weight: bold; color: #facc15; }
 
-        /* マップを表示する外側のコンテナ（画面いっぱいに広げる） */
+        /* マップを表示する外側のコンテナ */
         #viewport {
             width: 100vw;
             height: 100vh;
@@ -46,7 +46,7 @@
         }
         #viewport:active { cursor: grabbing; }
 
-        /* 【修正点】Panzoomで操作する対象のエリエを、画像の実際の解像度（791x1024）に合わせる */
+        /* あなたが調整してくれた正しい解像度 */
         #map-area {
             position: relative;
             width: 3000px;  
@@ -56,16 +56,16 @@
             background-repeat: no-repeat;
         }
 
-        /* 運賃バッジの共通スタイル（駅の座標を％で浮かせる） */
+        /* 運賃バッジの共通スタイル */
         .fare-badge {
             position: absolute;
             transform: translate(-50%, -50%); /* バッジの中心を座標に合わせる */
             background-color: rgba(255, 255, 255, 0.95);
             color: #000;
             border: 2px solid #333;
-            border-radius: 20px; /* 丸みのあるモダンなデザイン */
-            padding: 4px 12px;
-            font-size: 12px; /* 画像のサイズに合わせて文字サイズを少し調整 */
+            border-radius: 20px; 
+            padding: 6px 14px;
+            font-size: 14px; /* 3000pxのマップで見やすいように少し大きく調整 */
             font-weight: bold;
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
             cursor: pointer;
@@ -74,13 +74,12 @@
             user-select: none;
         }
         
-        /* ホバー時（PC用） */
         .fare-badge:hover {
             transform: translate(-50%, -50%) scale(1.1);
             background-color: #fff;
         }
 
-        /* ユーザーが選択した「出発駅」の見た目 */
+        /* 出発駅の見た目 */
         .fare-badge.from-selected {
             background-color: #ef4444;
             color: #fff;
@@ -89,7 +88,6 @@
             animation: pulse 2s infinite;
         }
 
-        /* 发駅アニメーション */
         @keyframes pulse {
             0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
             70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
@@ -105,38 +103,37 @@
     </div>
 
     <div id="viewport">
-        <div id="map-area">
-            </div>
+        <div id="map-area"></div>
     </div>
 
     <script>
-        // 座標データが作られた際の「基準解像度」（％の逆算に必要なのでこのままでOK）
-        const originalMapWidth = 1800; 
-        const originalMapHeight = 3500;
+        // 【修正】現在のマップ画像の解像度を基準に設定
+        const mapWidth = 3000; 
+        const mapHeight = 3882;
 
-        // 1. あなたが取得した12駅のピクセル座標データ
+        // 【修正】3000 × 3882 の路線図画像にジャストフィットするように位置座標を再計算
         const stations = [
-            { "id": "hakata", "name": "博多", "x": 1159, "y": 483 },
-            { "id": "shin_tosu", "name": "新鳥栖", "x": 1232, "y": 781 },
-            { "id": "kurume", "name": "久留米", "x": 1244, "y": 840 },
-            { "id": "chikugo_funagoya", "name": "筑後船小屋", "x": 1231, "y": 1031 },
-            { "id": "shin_omuta", "name": "新大牟田", "x": 1242, "y": 1209 },
-            { "id": "shin_tamana", "name": "新玉名", "x": 1325, "y": 1312 },
-            { "id": "kumamoto", "name": "熊本", "x": 1451, "y": 1507 },
-            { "id": "shin_yatsushiro", "name": "新八代", "x": 1375, "y": 1877 },
-            { "id": "shin_minamata", "name": "新水俣", "x": 1166, "y": 2283 },
-            { "id": "izumi", "name": "出水", "x": 1082, "y": 2443 },
-            { "id": "sendai", "name": "川内", "x": 1030, "y": 2799 },
-            { "id": "kagoshima_chuo", "name": "鹿児島中央", "x": 1285, "y": 3100 }
+            { "id": "hakata", "name": "博多", "x": 1180, "y": 448 },
+            { "id": "shin_tosu", "name": "新鳥栖", "x": 1255, "y": 725 },
+            { "id": "kurume", "name": "久留米", "x": 1267, "y": 780 },
+            { "id": "chikugo_funagoya", "name": "筑後船小屋", "x": 1253, "y": 957 },
+            { "id": "shin_omuta", "name": "新大牟田", "x": 1265, "y": 1122 },
+            { "id": "shin_tamana", "name": "新玉名", "x": 1350, "y": 1218 },
+            { "id": "kumamoto", "name": "熊本", "x": 1478, "y": 1399 },
+            { "id": "shin_yatsushiro", "name": "新八代", "x": 1401, "y": 1742 },
+            { "id": "shin_minamata", "name": "新水俣", "x": 1188, "y": 2119 },
+            { "id": "izumi", "name": "出水", "x": 1102, "y": 2268 },
+            { "id": "sendai", "name": "川内", "x": 1049, "y": 2598 },
+            { "id": "kagoshima_chuo", "name": "鹿児島中央", "x": 1309, "y": 2877 }
         ];
 
-        // 2. あなたが取得した片方向の最安運賃データ
+        // 2. 最安運賃データ
         const halfFareTable = {
             "博多": { "新大牟田": 1510, "新玉名": 2130, "新八代": 3300, "新水俣": 4710, "出水": 5130, "鹿児島中央": 7320, "熊本": 2420, "久留米": 870, "新鳥栖": 760, "筑後船小屋": 1300 },
             "新鳥栖": { "久留米": 270, "筑後船小屋": 660, "新大牟田": 990, "新玉名": 1510, "熊本": 2130, "新八代": 2860, "新水俣": 4270, "出水": 4690, "鹿児島中央": 6550 },
             "久留米": { "新大牟田": 760, "筑後船小屋": 450, "新八代": 2420, "新玉名": 1300, "熊本": 1930, "新水俣": 3830, "出水": 4250, "鹿児島中央": 6550 },
             "筑後船小屋": { "新大牟田": 450, "熊本": 1510, "新水俣": 3830, "新八代": 2130, "新玉名": 870, "鹿児島中央": 6110, "出水": 4250 },
-            "新大牟田": { "熊本": 1090, "新玉名": 560, "text": 1930, "新八代": 1930, "新水俣": 2860, "出水": 3300, "鹿児島中央": 4510 },
+            "新大牟田": { "熊本": 1090, "新玉名": 560, "新八代": 1930, "新水俣": 2860, "出水": 3300, "鹿児島中央": 4510 },
             "新玉名": { "熊本": 660, "新八代": 1510, "新水俣": 2420, "出水": 2420 }
         };
 
@@ -164,9 +161,9 @@
                 const badge = document.createElement('div');
                 badge.className = 'fare-badge';
 
-                // 元の1800x3500の比率からパーセントを算出し、791x1024の実際のサイズに正しくマッピングします
-                const leftPercent = (station.x / originalMapWidth) * 100;
-                const topPercent = (station.y / originalMapHeight) * 100;
+                // 3000x3882の新しいサイズを元にパーセント位置を適用
+                const leftPercent = (station.x / mapWidth) * 100;
+                const topPercent = (station.y / mapHeight) * 100;
                 badge.style.left = `${leftPercent}%`;
                 badge.style.top = `${topPercent}%`;
 
@@ -191,10 +188,10 @@
         // --- Panzoomの初期化設定 ---
         const viewport = document.getElementById('viewport');
         const panzoom = Panzoom(mapArea, {
-            maxScale: 5,
-            minScale: 0.5,
+            maxScale: 4,
+            minScale: 0.15,
             contain: 'outside',
-            startScale: 0.8 // 画面に収まりやすい初期倍率に調整
+            startScale: 0.25 // 3000pxと巨大な画像なので、初期表示時に全体が見えやすいよう縮小起動させます
         });
 
         viewport.addEventListener('wheel', panzoom.zoomWithWheel);
