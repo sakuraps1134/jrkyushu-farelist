@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="JR九州運賃">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>JR九州 地図式運賃表（新幹線プロトタイプ）</title>
@@ -20,23 +23,20 @@
         }
 
         /* 上部インフォメーションバー */
-        #info-panel {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            right: 15px;
-            z-index: 100;
-            background: rgba(0, 0, 0, 0.85);
-            color: #fff;
-            padding: 12px 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            border-left: 5px solid #ef4444;
-            pointer-events: auto;
-        }
-        #info-panel h1 { font-size: 16px; margin-bottom: 4px; letter-spacing: 0.05em; }
-        #info-panel p { font-size: 12px; color: #ccc; }
-        #current-status { font-weight: bold; color: #facc15; }
+       #current-status{
+    position:absolute;
+    top:12px;
+    left:12px;
+    z-index:100;
+    background:rgba(0,0,0,.65);
+    color:#fff;
+    padding:6px 12px;
+    border-radius:20px;
+    font-size:15px;
+    font-weight:bold;
+    pointer-events:none;
+}
+      
 
         /* マップを表示する外側のコンテナ */
         #viewport {
@@ -51,7 +51,7 @@
             position: relative;
             width: 3000px;  
             height: 3882px;
-            background-image: url('https://raw.githubusercontent.com/sakuraps1134/jrkyushu-farelist/main/base.jpg');
+            background-image: url('base.jpg');
             background-size: 100% 100%;
             background-repeat: no-repeat;
         }
@@ -101,10 +101,7 @@
 </head>
 <body>
 
-    <div id="info-panel">
-        <h1>JR九州 路線図運賃表</h1>
-        <p>現在の発駅: <span id="current-status">博多 (駅をタップして発駅を変更)</span></p>
-    </div>
+   <div id="current-status">博多</div>
 
     <div id="viewport">
         <div id="map-area"></div>
@@ -300,7 +297,7 @@
 
         function renderFares() {
             mapArea.innerHTML = '';
-            statusEl.innerText = `${currentFromStation.name} (他駅タップで変更)`;
+           statusEl.innerText = `発駅：${currentFromStation.name}`;
 
             stations.forEach(station => {
                 const badge = document.createElement('div');
@@ -332,21 +329,23 @@
         }
 
         // --- Panzoomの初期化設定 ---
-        const viewport = document.getElementById('viewport');
-       const panzoom = Panzoom(mapArea, {
-    maxScale: 4,
-    minScale: 0.15,
-    contain: 'outside',
-    startScale: 0.25,
-    excludeClass: 'fare-badge'
+       window.addEventListener("load", () => {
+
+    renderFares();
+
+    const viewport = document.getElementById('viewport');
+
+    const panzoom = Panzoom(mapArea, {
+        maxScale: 4,
+        minScale: 0.15,
+        contain: 'outside',
+        startScale: 0.25,
+        excludeClass: 'fare-badge'
+    });
+
+    viewport.addEventListener("wheel", panzoom.zoomWithWheel);
+
 });
-
-        viewport.addEventListener('wheel', panzoom.zoomWithWheel);
-
-        // ドラッグ状態の厳密な管理
-       
-
-        renderFares();
     </script>
 </body>
 </html>
