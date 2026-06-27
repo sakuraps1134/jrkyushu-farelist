@@ -113,9 +113,12 @@
         <p>現在の発駅: <span id="current-status">博多 (駅をタップして発駅を変更)</span></p>
     </div>
 
+   <div id="viewport">
     <div id="map-area">
-    <img id="map-image"
-         src="https://raw.githubusercontent.com/sakuraps1134/jrkyushu-farelist/main/base.jpg">
+        <img
+            id="map-image"
+            src="https://raw.githubusercontent.com/sakuraps1134/jrkyushu-farelist/main/base.jpg">
+    </div>
 </div>
 
     <script>
@@ -165,7 +168,7 @@
         }
 
         function renderFares() {
-            mapArea.innerHTML = '';
+            document.querySelectorAll('.fare-badge').forEach(e => e.remove());
             statusEl.innerText = `${currentFromStation.name} (他駅タップで変更)`;
 
             stations.forEach(station => {
