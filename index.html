@@ -47,21 +47,14 @@
         #viewport:active { cursor: grabbing; }
 
         /* 路線図エリア（重複idを削除） */
-       #map-area{
-    position:relative;
-    width:3000px;
-    height:3882px;
-}
-
-#map-image{
-    position:absolute;
-    left:0;
-    top:0;
-    width:3000px;
-    height:3882px;
-    user-select:none;
-    pointer-events:none;
-}
+        #map-area {
+            position: relative;
+            width: 3000px;  
+            height: 3882px;
+            background-image: url('https://raw.githubusercontent.com/sakuraps1134/jrkyushu-farelist/main/base.jpg');
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+        }
 
         /* 【修正】運賃バッジを極限までコンパクトに、文字も小さく変更 */
         .fare-badge {
@@ -113,13 +106,9 @@
         <p>現在の発駅: <span id="current-status">博多 (駅をタップして発駅を変更)</span></p>
     </div>
 
-   <div id="viewport">
-    <div id="map-area">
-        <img
-            id="map-image"
-            src="https://raw.githubusercontent.com/sakuraps1134/jrkyushu-farelist/main/base.jpg">
+    <div id="viewport">
+        <div id="map-area"></div>
     </div>
-</div>
 
     <script>
         const mapWidth = 3000; 
@@ -127,19 +116,79 @@
 
         // 【修正】下方にいくにつれて発生していた縦方向のズレ（Y座標誤差）を完全に補正
         const stations = [
-            { "id": "hakata", "name": "博多", "x": 1180, "y": 448 },
-            { "id": "shin_tosu", "name": "新鳥栖", "x": 1255, "y": 725 },
-            { "id": "kurume", "name": "久留米", "x": 1267, "y": 780 },
-            { "id": "chikugo_funagoya", "name": "筑後船小屋", "x": 1253, "y": 957 },
-            { "id": "shin_omuta", "name": "新大牟田", "x": 1265, "y": 1122 },
-            { "id": "shin_tamana", "name": "新玉名", "x": 1350, "y": 1218 },
-            { "id": "kumamoto", "name": "熊本", "x": 1478, "y": 1399 },
-            { "id": "shin_yatsushiro", "name": "新八代", "x": 1401, "y": 1775 },    // Y軸補正
-            { "id": "shin_minamata", "name": "新水俣", "x": 1188, "y": 2185 },   // Y軸補正
-            { "id": "izumi", "name": "出水", "x": 1102, "y": 2345 },             // Y軸補正
-            { "id": "sendai", "name": "川内", "x": 1049, "y": 2690 },             // Y軸補正
-            { "id": "kagoshima_chuo", "name": "鹿児島中央", "x": 1309, "y": 2985 } // Y軸補正
-        ];
+  {
+    "id": "hakata",
+    "name": "博多",
+    "x": 1159,
+    "y": 484
+  },
+  {
+    "id": "shin_tosu",
+    "name": "新鳥栖",
+    "x": 1231,
+    "y": 780
+  },
+  {
+    "id": "kurume",
+    "name": "久留米",
+    "x": 1245,
+    "y": 841
+  },
+  {
+    "id": "chikugo_funagoya",
+    "name": "筑後船小屋",
+    "x": 1232,
+    "y": 1031
+  },
+  {
+    "id": "shin_omuta",
+    "name": "新大牟田",
+    "x": 1245,
+    "y": 1208
+  },
+  {
+    "id": "shin_tamana",
+    "name": "新玉名",
+    "x": 1329,
+    "y": 1311
+  },
+  {
+    "id": "kumamoto",
+    "name": "熊本",
+    "x": 1452,
+    "y": 1508
+  },
+  {
+    "id": "shin_yatsushiro",
+    "name": "新八代",
+    "x": 1376,
+    "y": 1877
+  },
+  {
+    "id": "shin_minamata",
+    "name": "新水俣",
+    "x": 1165,
+    "y": 2285
+  },
+  {
+    "id": "izumi",
+    "name": "出水",
+    "x": 1083,
+    "y": 2444
+  },
+  {
+    "id": "sendai",
+    "name": "川内",
+    "x": 1027,
+    "y": 2799
+  },
+  {
+    "id": "kagoshima_chuo",
+    "name": "鹿児島中央",
+    "x": 1286,
+    "y": 3102
+  }
+];
 
         // 運賃データ
         const halfFareTable = {
@@ -168,15 +217,17 @@
         }
 
         function renderFares() {
-            document.querySelectorAll('.fare-badge').forEach(e => e.remove());
+            mapArea.innerHTML = '';
             statusEl.innerText = `${currentFromStation.name} (他駅タップで変更)`;
 
             stations.forEach(station => {
                 const badge = document.createElement('div');
                 badge.className = 'fare-badge';
 
-                badge.style.left = `${station.x}px`;
-badge.style.top = `${station.y}px`;
+                const leftPercent = (station.x / mapWidth) * 100;
+                const topPercent = (station.y / mapHeight) * 100;
+                badge.style.left = `${leftPercent}%`;
+                badge.style.top = `${topPercent}%`;
 
                 // 【修正】出発駅以外は「円」を省いて数字だけに調整
                 if (station.id === currentFromStation.id) {
