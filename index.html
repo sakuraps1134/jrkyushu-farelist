@@ -16,7 +16,7 @@
             height: 100%;
             overflow: hidden;
             font-family: 'Helvetica Neue', Arial, sans-serif;
-            background-color: #1a1a1a; /* 高級感のあるダーク背景 */
+            background-color: #1a1a1a;
         }
 
         /* 上部インフォメーションバー */
@@ -46,7 +46,7 @@
         }
         #viewport:active { cursor: grabbing; }
 
-        /* あなたが調整してくれた正しい解像度 */
+        /* 路線図エリア（重複idを削除） */
         #map-area {
             position: relative;
             width: 3000px;  
@@ -56,41 +56,45 @@
             background-repeat: no-repeat;
         }
 
-        /* 運賃バッジの共通スタイル */
+        /* 【修正】運賃バッジを極限までコンパクトに、文字も小さく変更 */
         .fare-badge {
             position: absolute;
             transform: translate(-50%, -50%); /* バッジの中心を座標に合わせる */
             background-color: rgba(255, 255, 255, 0.95);
             color: #000;
-            border: 2px solid #333;
-            border-radius: 20px; 
-            padding: 6px 14px;
-            font-size: 14px; /* 3000pxのマップで見やすいように少し大きく調整 */
+            border: 1.5px solid #333; /* 枠線を少し細く */
+            border-radius: 4px; /* 丸ではなく、四角ベースのコンパクトな形に */
+            padding: 2px 6px; /* 余白を最小限に */
+            font-size: 11px; /* 文字を小さく */
             font-weight: bold;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
             cursor: pointer;
             transition: transform 0.15s, background-color 0.15s;
             white-space: nowrap;
             user-select: none;
+            z-index: 10;
         }
         
         .fare-badge:hover {
             transform: translate(-50%, -50%) scale(1.1);
             background-color: #fff;
+            z-index: 20;
         }
 
-        /* 出発駅の見た目 */
+        /* 出発駅の見た目（見失わないように少しだけ広く） */
         .fare-badge.from-selected {
             background-color: #ef4444;
             color: #fff;
             border-color: #fff;
+            padding: 3px 8px;
+            font-size: 12px;
             z-index: 50;
             animation: pulse 2s infinite;
         }
 
         @keyframes pulse {
             0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            70% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
             100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
     </style>
@@ -107,11 +111,10 @@
     </div>
 
     <script>
-        // 【修正】現在のマップ画像の解像度を基準に設定
         const mapWidth = 3000; 
         const mapHeight = 3882;
 
-        // 【修正】3000 × 3882 の路線図画像にジャストフィットするように位置座標を再計算
+        // 【修正】下方にいくにつれて発生していた縦方向のズレ（Y座標誤差）を完全に補正
         const stations = [
             { "id": "hakata", "name": "博多", "x": 1180, "y": 448 },
             { "id": "shin_tosu", "name": "新鳥栖", "x": 1255, "y": 725 },
@@ -120,14 +123,14 @@
             { "id": "shin_omuta", "name": "新大牟田", "x": 1265, "y": 1122 },
             { "id": "shin_tamana", "name": "新玉名", "x": 1350, "y": 1218 },
             { "id": "kumamoto", "name": "熊本", "x": 1478, "y": 1399 },
-            { "id": "shin_yatsushiro", "name": "新八代", "x": 1401, "y": 1742 },
-            { "id": "shin_minamata", "name": "新水俣", "x": 1188, "y": 2119 },
-            { "id": "izumi", "name": "出水", "x": 1102, "y": 2268 },
-            { "id": "sendai", "name": "川内", "x": 1049, "y": 2598 },
-            { "id": "kagoshima_chuo", "name": "鹿児島中央", "x": 1309, "y": 2877 }
+            { "id": "shin_yatsushiro", "name": "新八代", "x": 1401, "y": 1775 },    // Y軸補正
+            { "id": "shin_minamata", "name": "新水俣", "x": 1188, "y": 2185 },   // Y軸補正
+            { "id": "izumi", "name": "出水", "x": 1102, "y": 2345 },             // Y軸補正
+            { "id": "sendai", "name": "川内", "x": 1049, "y": 2690 },             // Y軸補正
+            { "id": "kagoshima_chuo", "name": "鹿児島中央", "x": 1309, "y": 2985 } // Y軸補正
         ];
 
-        // 2. 最安運賃データ
+        // 運賃データ
         const halfFareTable = {
             "博多": { "新大牟田": 1510, "新玉名": 2130, "新八代": 3300, "新水俣": 4710, "出水": 5130, "鹿児島中央": 7320, "熊本": 2420, "久留米": 870, "新鳥栖": 760, "筑後船小屋": 1300 },
             "新鳥栖": { "久留米": 270, "筑後船小屋": 660, "新大牟田": 990, "新玉名": 1510, "熊本": 2130, "新八代": 2860, "新水俣": 4270, "出水": 4690, "鹿児島中央": 6550 },
@@ -161,21 +164,22 @@
                 const badge = document.createElement('div');
                 badge.className = 'fare-badge';
 
-                // 3000x3882の新しいサイズを元にパーセント位置を適用
                 const leftPercent = (station.x / mapWidth) * 100;
                 const topPercent = (station.y / mapHeight) * 100;
                 badge.style.left = `${leftPercent}%`;
                 badge.style.top = `${topPercent}%`;
 
+                // 【修正】出発駅以外は「円」を省いて数字だけに調整
                 if (station.id === currentFromStation.id) {
                     badge.classList.add('from-selected');
                     badge.innerText = `発: ${station.name}`;
                 } else {
                     const fare = getFare(currentFromStation.name, station.name);
-                    badge.innerText = fare !== null ? `${fare}円` : `${station.name}`;
+                    badge.innerText = fare !== null ? `${fare}` : `${station.name}`;
                 }
 
-                badge.addEventListener('click', (e) => {
+                // タップイベント（Panzoomのドラッグ時と明確に分離）
+                badge.addEventListener('pointerup', (e) => {
                     if (window.isDragging) return;
                     currentFromStation = station;
                     renderFares();
@@ -191,11 +195,12 @@
             maxScale: 4,
             minScale: 0.15,
             contain: 'outside',
-            startScale: 0.25 // 3000pxと巨大な画像なので、初期表示時に全体が見えやすいよう縮小起動させます
+            startScale: 0.25
         });
 
         viewport.addEventListener('wheel', panzoom.zoomWithWheel);
 
+        // ドラッグ状態の厳密な管理
         window.isDragging = false;
         mapArea.addEventListener('panzoompan', () => { window.isDragging = true; });
         viewport.addEventListener('pointerdown', () => { window.isDragging = false; });
