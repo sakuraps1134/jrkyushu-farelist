@@ -47,14 +47,21 @@
         #viewport:active { cursor: grabbing; }
 
         /* 路線図エリア（重複idを削除） */
-        #map-area {
-            position: relative;
-            width: 3000px;  
-            height: 3882px;
-            background-image: url('https://raw.githubusercontent.com/sakuraps1134/jrkyushu-farelist/main/base.jpg');
-            background-size: 100% 100%;
-            background-repeat: no-repeat;
-        }
+       #map-area{
+    position:relative;
+    width:3000px;
+    height:3882px;
+}
+
+#map-image{
+    position:absolute;
+    left:0;
+    top:0;
+    width:3000px;
+    height:3882px;
+    user-select:none;
+    pointer-events:none;
+}
 
         /* 【修正】運賃バッジを極限までコンパクトに、文字も小さく変更 */
         .fare-badge {
@@ -106,9 +113,10 @@
         <p>現在の発駅: <span id="current-status">博多 (駅をタップして発駅を変更)</span></p>
     </div>
 
-    <div id="viewport">
-        <div id="map-area"></div>
-    </div>
+    <div id="map-area">
+    <img id="map-image"
+         src="https://raw.githubusercontent.com/sakuraps1134/jrkyushu-farelist/main/base.jpg">
+</div>
 
     <script>
         const mapWidth = 3000; 
@@ -164,10 +172,8 @@
                 const badge = document.createElement('div');
                 badge.className = 'fare-badge';
 
-                const leftPercent = (station.x / mapWidth) * 100;
-                const topPercent = (station.y / mapHeight) * 100;
-                badge.style.left = `${leftPercent}%`;
-                badge.style.top = `${topPercent}%`;
+                badge.style.left = `${station.x}px`;
+badge.style.top = `${station.y}px`;
 
                 // 【修正】出発駅以外は「円」を省いて数字だけに調整
                 if (station.id === currentFromStation.id) {
