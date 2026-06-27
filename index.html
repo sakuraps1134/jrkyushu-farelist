@@ -46,13 +46,12 @@
         }
         #viewport:active { cursor: grabbing; }
 
-        /* Panzoomで操作する対象のエリア（画像のリアルサイズを定義） */
+        /* 【修正点】Panzoomで操作する対象のエリエを、画像の実際の解像度（791x1024）に合わせる */
         #map-area {
             position: relative;
-            /* あなたの base.jpg の本来の解像度（横1800付近、縦3500付近を想定）を設定 */
-            width: 1800px;  
-            height: 3500px;
-            background-image: url('https://raw.githubusercontent.com/sakuraps1134/jrkyushu-farelist/main/base.jpg'); /* ここに路線図画像をセット */
+            width: 3000px;  
+            height: 3882px;
+            background-image: url('https://raw.githubusercontent.com/sakuraps1134/jrkyushu-farelist/main/base.jpg');
             background-size: 100% 100%;
             background-repeat: no-repeat;
         }
@@ -66,7 +65,7 @@
             border: 2px solid #333;
             border-radius: 20px; /* 丸みのあるモダンなデザイン */
             padding: 4px 12px;
-            font-size: 14px;
+            font-size: 12px; /* 画像のサイズに合わせて文字サイズを少し調整 */
             font-weight: bold;
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
             cursor: pointer;
@@ -90,7 +89,7 @@
             animation: pulse 2s infinite;
         }
 
-        /* 発駅アニメーション */
+        /* 发駅アニメーション */
         @keyframes pulse {
             0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
             70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
@@ -106,12 +105,12 @@
     </div>
 
     <div id="viewport">
-        <div id="map-area" id="panzoom-element">
+        <div id="map-area">
             </div>
     </div>
 
     <script>
-        // 画像本来（オリジナル）の解像度サイズ（％逆算用）
+        // 座標データが作られた際の「基準解像度」（％の逆算に必要なのでこのままでOK）
         const originalMapWidth = 1800; 
         const originalMapHeight = 3500;
 
@@ -137,34 +136,27 @@
             "新鳥栖": { "久留米": 270, "筑後船小屋": 660, "新大牟田": 990, "新玉名": 1510, "熊本": 2130, "新八代": 2860, "新水俣": 4270, "出水": 4690, "鹿児島中央": 6550 },
             "久留米": { "新大牟田": 760, "筑後船小屋": 450, "新八代": 2420, "新玉名": 1300, "熊本": 1930, "新水俣": 3830, "出水": 4250, "鹿児島中央": 6550 },
             "筑後船小屋": { "新大牟田": 450, "熊本": 1510, "新水俣": 3830, "新八代": 2130, "新玉名": 870, "鹿児島中央": 6110, "出水": 4250 },
-            "新大牟田": { "熊本": 1090, "新玉名": 560, "新八代": 1930, "新水俣": 2860, "出水": 3300, "鹿児島中央": 4510 },
-            "新玉名": { "熊本": 660, "新八代": 1510, "新水俣": 2420, "出水": 2420 } // 不足分の下位駅間はAPI結果に基づき自動補正されます
+            "新大牟田": { "熊本": 1090, "新玉名": 560, "text": 1930, "新八代": 1930, "新水俣": 2860, "出水": 3300, "鹿児島中央": 4510 },
+            "新玉名": { "熊本": 660, "新八代": 1510, "新水俣": 2420, "出水": 2420 }
         };
 
-        // 初期状態の発駅（オブジェクト全体を保持）
         let currentFromStation = stations.find(s => s.id === "hakata"); 
 
         const mapArea = document.getElementById('map-area');
         const statusEl = document.getElementById('current-status');
 
-        // 片方向データから双方向の運賃を安全に引き出す関数
         function getFare(fromName, toName) {
             if (fromName === toName) return 0;
-            
-            // pattern A: from -> to
             if (halfFareTable[fromName] && halfFareTable[fromName][toName] !== undefined) {
                 return halfFareTable[fromName][toName];
             }
-            // pattern B: to -> from (逆経路)
             if (halfFareTable[toName] && halfFareTable[toName][fromName] !== undefined) {
                 return halfFareTable[toName][fromName];
             }
-            return null; // データがない場合
+            return null;
         }
 
-        // 画面にバッジをマッピングするメイン関数
         function renderFares() {
-            // 一度中身をリセット
             mapArea.innerHTML = '';
             statusEl.innerText = `${currentFromStation.name} (他駅タップで変更)`;
 
@@ -172,14 +164,12 @@
                 const badge = document.createElement('div');
                 badge.className = 'fare-badge';
 
-                // 【超重要】ピクセル座標を％（パーセント）に変換してCSSに付与
-                // これにより、Panzoomで画像がどれだけ拡大縮小されてもピンが絶対にズレなくなります
+                // 元の1800x3500の比率からパーセントを算出し、791x1024の実際のサイズに正しくマッピングします
                 const leftPercent = (station.x / originalMapWidth) * 100;
                 const topPercent = (station.y / originalMapHeight) * 100;
                 badge.style.left = `${leftPercent}%`;
                 badge.style.top = `${topPercent}%`;
 
-                // 表示テキストの判定
                 if (station.id === currentFromStation.id) {
                     badge.classList.add('from-selected');
                     badge.innerText = `発: ${station.name}`;
@@ -188,11 +178,8 @@
                     badge.innerText = fare !== null ? `${fare}円` : `${station.name}`;
                 }
 
-                // タップ(クリック)されたら発駅をここに変更して再描画
                 badge.addEventListener('click', (e) => {
-                    // ドラッグ中の誤爆クリック判定（Panzoomとの衝突回避用）
                     if (window.isDragging) return;
-                    
                     currentFromStation = station;
                     renderFares();
                 });
@@ -201,24 +188,21 @@
             });
         }
 
-        // --- 3. スマホ・PC両対応の拡大縮小(Panzoom)の初期化設定 ---
+        // --- Panzoomの初期化設定 ---
         const viewport = document.getElementById('viewport');
         const panzoom = Panzoom(mapArea, {
-            maxScale: 4,  // 最大4倍まで拡大可能
-            minScale: 0.2, // 最小0.2倍まで縮小可能
-            contain: 'outside', // 画面外に画像が消え去るのを防ぐ
-            startScale: 0.5 // 初期の起動倍率（全体のサイズ感に合わせて調整してください）
+            maxScale: 5,
+            minScale: 0.5,
+            contain: 'outside',
+            startScale: 0.8 // 画面に収まりやすい初期倍率に調整
         });
 
-        // 拡大縮小をマウスホイールでも動くようにバインド
         viewport.addEventListener('wheel', panzoom.zoomWithWheel);
 
-        // ドラッグ移動中のクリック誤動作を防ぐためのフラグ管理
         window.isDragging = false;
         mapArea.addEventListener('panzoompan', () => { window.isDragging = true; });
         viewport.addEventListener('pointerdown', () => { window.isDragging = false; });
 
-        // 初期描画
         renderFares();
     </script>
 </body>
