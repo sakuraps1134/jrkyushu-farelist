@@ -62,30 +62,31 @@
 
         /* 駅名・運賃バッジのスタイル */
        /* 駅名・運賃バッジのスタイル（目に優しいダーク＆半透明仕様） */
+        /* 駅名・運賃バッジのスタイル（白背景・極小・目に優しい低輝度仕様） */
         .fare-badge {
             position: absolute;
             transform: translate(-50%, -50%);
-            /* 背景を真っ白から「高級感のある半透明のダークグレー」に変更 */
-            background: rgba(30, 30, 30, 0.85);
-            /* 文字色を「少し柔らかい白（オフホワイト）」にして眩しさを軽減 */
-            color: #e0e0e0;
-            /* パディング（内側の余白）を狭くしてバッジ自体を小さく */
-            padding: 2px 5px;
-            border-radius: 4px;
-            /* 文字サイズを 11px から 9.5px に縮小して重なりを防止 */
-            font-size: 9.5px;
-            font-weight: bold;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            /* 枠線を白から「目立たない薄いグレー」に変更 */
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            /* 真っ白(#fff)ではなく、少しグレーがかった落ち着いた白にして眩しさをカット */
+            background: rgba(245, 245, 245, 0.95);
+            /* 文字色を真っ黒ではなく、少し柔らかいダークグレーに */
+            color: #2b2b2b;
+            /* 上下の余白を1px、左右を3pxにしてバッジの面積を最小に */
+            padding: 1px 3px;
+            border-radius: 3px;
+            /* 文字サイズをさらに小さく（8.5px） */
+            font-size: 8.5px;
+            /* 太字をやめて通常の太さにすることで、重なり時の圧迫感を軽減 */
+            font-weight: normal;
+            /* 影を薄くして、バッジ同士が重なっても汚く見えないように */
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+            /* 枠線は目立たないごく薄いグレー */
+            border: 1px solid rgba(0, 0, 0, 0.12);
             white-space: nowrap;
             text-align: center;
             transition: background 0.2s, color 0.2s, transform 0.1s;
             user-select: none;
             -webkit-user-select: none;
             z-index: 10;
-            /* すりガラス効果を加えて背景の路線図に馴染ませる */
-            backdrop-filter: blur(2px);
         }
 
         /* タップ時の視覚効果 */
@@ -95,12 +96,14 @@
 
         /* 出発駅に選ばれたときのスタイル */
         .fare-badge.from-selected {
-            /* JR九州の赤も、少し暗めの落ち着いた赤に変更 */
-            background: #cc0010;
+            /* 選択された駅だけは目立つように少し太字に */
+            font-weight: bold;
+            /* 出発駅も少しだけ落ち着いた赤に変更 */
+            background: #d60010;
             color: #ffffff;
             border-color: #a0000c;
             z-index: 20;
-            box-shadow: 0 3px 8px rgba(204,0,16,0.5);
+            box-shadow: 0 2px 6px rgba(214,0,16,0.4);
         }
     </style>
 </head>
