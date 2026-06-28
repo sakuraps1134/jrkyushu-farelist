@@ -61,23 +61,31 @@
         }
 
         /* 駅名・運賃バッジのスタイル */
+       /* 駅名・運賃バッジのスタイル（目に優しいダーク＆半透明仕様） */
         .fare-badge {
             position: absolute;
             transform: translate(-50%, -50%);
-            background: rgba(255, 255, 255, 0.95);
-            color: #1a1a1a;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 11px;
+            /* 背景を真っ白から「高級感のある半透明のダークグレー」に変更 */
+            background: rgba(30, 30, 30, 0.85);
+            /* 文字色を「少し柔らかい白（オフホワイト）」にして眩しさを軽減 */
+            color: #e0e0e0;
+            /* パディング（内側の余白）を狭くしてバッジ自体を小さく */
+            padding: 2px 5px;
+            border-radius: 4px;
+            /* 文字サイズを 11px から 9.5px に縮小して重なりを防止 */
+            font-size: 9.5px;
             font-weight: bold;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-            border: 1px solid #ccc;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            /* 枠線を白から「目立たない薄いグレー」に変更 */
+            border: 1px solid rgba(255, 255, 255, 0.15);
             white-space: nowrap;
             text-align: center;
             transition: background 0.2s, color 0.2s, transform 0.1s;
             user-select: none;
             -webkit-user-select: none;
             z-index: 10;
+            /* すりガラス効果を加えて背景の路線図に馴染ませる */
+            backdrop-filter: blur(2px);
         }
 
         /* タップ時の視覚効果 */
@@ -87,11 +95,12 @@
 
         /* 出発駅に選ばれたときのスタイル */
         .fare-badge.from-selected {
-            background: #e60012; /* JR九州のコーポレートレッド */
+            /* JR九州の赤も、少し暗めの落ち着いた赤に変更 */
+            background: #cc0010;
             color: #ffffff;
-            border-color: #b3000e;
+            border-color: #a0000c;
             z-index: 20;
-            box-shadow: 0 4px 10px rgba(230,0,18,0.4);
+            box-shadow: 0 3px 8px rgba(204,0,16,0.5);
         }
     </style>
 </head>
