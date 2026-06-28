@@ -162,7 +162,7 @@
                     
                     // 出発駅を更新
                     currentFromStation = station;
-                    document.getElementById('current-status').innerText = `出発駅: ${station.name}`;
+                    document.getElementById('current-status').innerText = `選択駅: ${station.name}`;
                     
                     // 運賃のテキストだけを瞬時に書き換える（超軽量）
                     updateFares();
@@ -186,7 +186,7 @@
                 if (station.name === currentFromStation.name) {
                     // 自身が出発駅の場合
                     badge.classList.add('from-selected');
-                    badge.innerText = `発: ${station.name}`;
+                    badge.innerText = `${station.name}`;
                 } else {
                     // それ以外の駅は運賃を計算して表示
                     const fare = getFare(currentFromStation.name, station.name);
@@ -218,7 +218,7 @@
 
                 // 3. 初期出発駅をリストの最初の駅（例: 博多）に設定
                 currentFromStation = stations[0];
-                statusEl.innerText = `出発駅: ${currentFromStation.name}`;
+                statusEl.innerText = `選択駅: ${currentFromStation.name}`;
 
                 // 4. 駅バッジの初期配置
                 initStationBadges();
